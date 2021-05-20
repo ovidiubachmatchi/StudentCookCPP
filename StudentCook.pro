@@ -13,6 +13,7 @@ SOURCES += \
     mainwindow.cpp
 
 HEADERS += \
+    ingredient.h \
     mainwindow.h
 
 FORMS += \

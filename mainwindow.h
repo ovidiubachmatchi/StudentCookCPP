@@ -17,6 +17,8 @@ public:
     ~MainWindow();
 
 private:
+    void add_ingredient();
+    void delete_ingredient();
     Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H

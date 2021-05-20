@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "ingredient.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -25,8 +26,37 @@ MainWindow::MainWindow(QWidget *parent)
     //completer->event();
     ui->input->setCompleter(completer);
 
+    connect(ui->add_ingredient, &QPushButton::released, this, &MainWindow::add_ingredient);
+    connect(ui->delete_ingredient, &QPushButton::released, this, &MainWindow::delete_ingredient);
 }
 
+void MainWindow::add_ingredient()
+{
+    if (ui->input->text() != "") {
+    QString ingredient = ui->input->text();
+    std::string utf8_text = ingredient.toUtf8().constData();
+    list_of_ingredients.add(utf8_text);
+
+    std::string ingredients_to_show = list_of_ingredients.get();
+
+    QString list_ingredients = QString::fromUtf8(ingredients_to_show);
+    ui->ingredients->setText(list_ingredients);
+    }
+}
+void MainWindow::delete_ingredient()
+{
+    if (ui->input->text() != "") {
+    QString ingredient = ui->input->text();
+    std::string utf8_text = ingredient.toUtf8().constData();
+    list_of_ingredients.remove(utf8_text);
+
+    std::string ingredients_to_show = list_of_ingredients.get();
+
+    QString list_ingredients = QString::fromUtf8(ingredients_to_show);
+    ui->ingredients->setText(list_ingredients);
+    if (list_ingredients == "") { ui->ingredients->setText("There are no ingredients"); }
+    }
+}
 MainWindow::~MainWindow()
 {
     delete ui;
