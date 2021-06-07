@@ -4,6 +4,8 @@
 #include <string.h>
 #include <vector>
 #include <utility>
+#include <QGroupBox>
+#include <QListWidget>
 
 QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
 
@@ -40,19 +42,29 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->clear, &QPushButton::released, this, &MainWindow::clear);
     connect(ui->show_recipes, &QPushButton::released, this, &MainWindow::show_recipes);
 }
-
+void RemoveLayout (QWidget* widget)
+{
+    QLayout* layout = widget->layout ();
+    if (layout != 0)
+    {
+    QLayoutItem *item;
+    while ((item = layout->takeAt(0)) != 0)
+        layout->removeItem (item);
+    delete layout;
+    }
+}
 void MainWindow::show_recipes()
 {
 
-    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    connect(nam, &QNetworkAccessManager::finished, this, &MainWindow::downloadFinished);
-    const QUrl url = QUrl("recipe-name");
-    QNetworkRequest request(url);
-    nam->get(request);
+//    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+//    connect(nam, &QNetworkAccessManager::finished, this, &MainWindow::downloadFinished);
+//    const QUrl url = QUrl("recipe-name");
+//    QNetworkRequest request(url);
+//    nam->get(request);
 
     QSqlQuery query;
     query.exec("SELECT * FROM recipes;");
-
+    qApp->setStyleSheet("QLineEdit { color: white; text-decoration=none; }");
     vector<pair<float,short int>> ids_procent;
 
     while(query.next()){
@@ -65,30 +77,44 @@ void MainWindow::show_recipes()
     }
     sort(ids_procent.rbegin(), ids_procent.rend());
 
+    QVBoxLayout *layout = new QVBoxLayout( );
     for(auto i:ids_procent) {
     query.prepare("SELECT * FROM recipes WHERE id_recipe=(:id);");
     query.bindValue(0, i.second);
     query.exec();
+
     if (query.next()) {
         string name = query.value(1).toString().toUtf8().constData();
         string ingredients = query.value(2).toString().toUtf8().constData();
         string link = query.value(3).toString().toUtf8().constData();
         string image_link = query.value(4).toString().toUtf8().constData();
-        qDebug() <<  QString::fromStdString(name) <<  QString::fromStdString(ingredients) <<  QString::fromStdString(link) <<  QString::fromStdString(image_link);
+
+        QString recipe_info = "<a href='"+ QString::fromStdString(link) + "'>" + QString::fromStdString(std::to_string(int(i.first)) + "%" + '\n' + name) + "</a>";
+        QLabel *recipe_text = new QLabel;
+
+        recipe_text->setText( recipe_info );
+        recipe_text->setAlignment(Qt::AlignHCenter);
+        recipe_text->setFixedHeight(100);
+        recipe_text->setTextInteractionFlags(Qt::TextBrowserInteraction);
+        recipe_text->setOpenExternalLinks(true);
+        layout->addWidget( recipe_text );
         }
     }
-
-
-
+    QWidget *wid=new QWidget;
+    wid->setLayout(layout);
+    ui->recipes->setWidgetResizable(true);
+    ui->recipes->setWidget(wid);
+    RemoveLayout(ui->recipes->widget());
+    qApp->setStyleSheet("QLineEdit { color: white; text-decoration=none; }");
 }
-void MainWindow::downloadFinished(QNetworkReply *reply)
-{
-    QPixmap pm;
-    pm.loadFromData(reply->readAll());
-    ui->recipe_picture->setPixmap(pm);
-    ui->recipe_name->setText("<a href='link'>name</a>");
-    ui->recipe_name->setOpenExternalLinks(true);
-}
+//void MainWindow::downloadFinished(QNetworkReply *reply)
+//{
+//    QPixmap pm;
+//    pm.loadFromData(reply->readAll());
+//    ui->recipe_picture->setPixmap(pm);
+//    ui->recipe_name->setText("<a href='link'>name</a>");
+//    ui->recipe_name->setOpenExternalLinks(true);
+//}
 void MainWindow::add_ingredient()
 {
     if (ui->input->text() != "") {
@@ -115,6 +141,7 @@ void MainWindow::delete_ingredient()
     ui->ingredients->setText(list_ingredients);
     if (list_ingredients == "") { ui->ingredients->setText("There are no ingredients"); }
     }
+
 }
 void MainWindow::clear()
 {
@@ -127,4 +154,3 @@ MainWindow::~MainWindow()
     db.close();
     delete ui;
 }
-
