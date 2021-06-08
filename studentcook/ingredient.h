@@ -42,8 +42,8 @@ class Ingredients{
     }
 
     void remove(const std::string& ingredient){
-        if (std::find(this->ingredients_list.begin(), this->ingredients_list.end(), ingredient) == this->ingredients_list.end())
-            this->ingredients_list.erase(std::remove(this->ingredients_list.begin(), this->ingredients_list.end(), ingredient), this->ingredients_list.end());
+        auto itr = std::find(ingredients_list.begin(), ingredients_list.end(), ingredient);
+        if (itr != ingredients_list.end()) ingredients_list.erase(itr);
     }
 
     std::string get(std::string delim) {

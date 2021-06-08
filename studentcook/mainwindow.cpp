@@ -64,8 +64,7 @@ void MainWindow::show_recipes()
 
     QSqlQuery query;
     query.exec("SELECT * FROM recipes;");
-    qApp->setStyleSheet("QLineEdit { color: white; text-decoration=none; }");
-    vector<pair<float,short int>> ids_procent;
+    vector<tuple<float,short int,string>> ids_procent;
 
     while(query.next()){
         short int id = query.value(0).toInt();
@@ -73,14 +72,14 @@ void MainWindow::show_recipes()
         float procent;
         string it_uses = list_of_ingredients.ingredients_match(ingredients,procent);
         if (procent > 1)
-        ids_procent.push_back(make_pair(((float)((int)(procent * 10))) / 10,id));
+        ids_procent.push_back(make_tuple(((float)((int)(procent * 10))) / 10,id, it_uses));
     }
     sort(ids_procent.rbegin(), ids_procent.rend());
 
     QVBoxLayout *layout = new QVBoxLayout( );
     for(auto i:ids_procent) {
     query.prepare("SELECT * FROM recipes WHERE id_recipe=(:id);");
-    query.bindValue(0, i.second);
+    query.bindValue(0, std::get<1>(i));
     query.exec();
 
     if (query.next()) {
@@ -89,13 +88,13 @@ void MainWindow::show_recipes()
         string link = query.value(3).toString().toUtf8().constData();
         string image_link = query.value(4).toString().toUtf8().constData();
 
-        QString recipe_info = "<a href='"+ QString::fromStdString(link) + "'>" + QString::fromStdString(std::to_string(int(i.first)) + "%" + '\n' + name) + "</a>";
+        QString recipe_info = "<a href='"+ QString::fromStdString(link) + "' style='color:white; text-decoration: none;text-align: center; display: inline-block;' >" + QString::fromStdString(std::to_string(int(std::get<0>(i))) + "%" + "<br>" + name+"<br>" + "It uses your: "+ (std::get<2>(i)).substr(0, std::get<2>(i).size()-1)) + "</a>";
         QLabel *recipe_text = new QLabel;
 
         recipe_text->setText( recipe_info );
         recipe_text->setAlignment(Qt::AlignHCenter);
         recipe_text->setFixedHeight(100);
-        recipe_text->setTextInteractionFlags(Qt::TextBrowserInteraction);
+
         recipe_text->setOpenExternalLinks(true);
         layout->addWidget( recipe_text );
         }
@@ -105,7 +104,6 @@ void MainWindow::show_recipes()
     ui->recipes->setWidgetResizable(true);
     ui->recipes->setWidget(wid);
     RemoveLayout(ui->recipes->widget());
-    qApp->setStyleSheet("QLineEdit { color: white; text-decoration=none; }");
 }
 //void MainWindow::downloadFinished(QNetworkReply *reply)
 //{

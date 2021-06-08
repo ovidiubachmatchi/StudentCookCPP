@@ -153,7 +153,13 @@ border-radius: 3px;</string>
              <string notr="true">color: white;
 font: 15pt;
 border: 1px solid white;
-border-radius: 3px;</string>
+border-radius: 3px;
+QLabel {
+color: white;
+font: 15pt;
+border: 1px solid white;
+border-radius: 3px;
+}</string>
             </property>
             <property name="widgetResizable">
              <bool>true</bool>
